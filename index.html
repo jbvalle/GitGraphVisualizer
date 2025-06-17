@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitCommit Visualizer - Infinite Scroll</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --dark-bg: #0d1117;
+            --dark-card: #161b22;
+            --dark-border: #30363d;
+            --accent-primary: #58a6ff;
+            --accent-secondary: #bc8cff;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --success: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+            --graph-line: #2c2f36;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(88, 166, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(188, 140, 255, 0.05) 0%, transparent 20%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--dark-border);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3px;
+        }
+
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 166, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--dark-bg);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4a94e0, #a77bff);
+            box-shadow: 0 5px 15px rgba(88, 166, 255, 0.3);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .graph-container {
+            flex: 1;
+            background: var(--dark-card);
+            border-radius: 12px;
+            border: 1px solid var(--dark-border);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .graph-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .graph-header i {
+            color: var(--accent-primary);
+        }
+
+        .repo-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .repo-info img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--dark-border);
+        }
+
+        .commit-graph {
+            position: relative;
+            padding: 20px 0;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .commit-node {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+            padding-left: 50px;
+            transition: transform 0.3s ease;
+        }
+
+        .commit-node:hover {
+            transform: translateX(5px);
+        }
+
+        .commit-node:last-child {
+            margin-bottom: 0;
+        }
+
+        .commit-node::before {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--graph-line);
+            z-index: 1;
+        }
+
+        .commit-node:first-child::before {
+            top: 50%;
+        }
+
+        .commit-node:last-child::before {
+            bottom: 50%;
+        }
+
+        .commit-dot {
+            position: absolute;
+            left: 14px;
+            top: 18px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: 2px solid var(--dark-card);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .commit-node:hover .commit-dot {
+            transform: scale(1.4);
+            box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2);
+        }
+
+        .commit-node.active .commit-dot {
+            transform: scale(1.4);
+            box-shadow: 0 0 0 6px rgba(88, 166, 255, 0.3);
+        }
+
+        .commit-card {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .commit-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 5px 15px rgba(88, 166, 255, 0.1);
+            background: rgba(22, 27, 34, 0.9);
+        }
+
+        .commit-card.active {
+            border-color: var(--accent-primary);
+            background: rgba(22, 27, 34, 0.95);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.2);
+        }
+
+        .commit-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .commit-sha {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            color: var(--accent-primary);
+            background: rgba(88, 166, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .commit-sha:hover {
+            background: rgba(88, 166, 255, 0.2);
+        }
+
+        .commit-date {
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .commit-message {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .commit-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .author-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--dark-border);
+        }
+
+        .commit-refs {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .ref {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .ref-main {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--success);
+        }
+
+        .ref-head {
+            background: rgba(210, 153, 34, 0.15);
+            color: var(--warning);
+        }
+
+        .details-container {
+            width: 380px;
+            background: var(--dark-card);
+            border-radius: 12px;
+            border: 1px solid var(--dark-border);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: sticky;
+            top: 20px;
+            max-height: 90vh;
+        }
+
+        .details-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .details-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .commit-details {
+            padding: 20px 0;
+        }
+
+        .detail-item {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+        .detail-value a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .files-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--dark-border);
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .file-item {
+            padding: 8px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .file-item i {
+            color: var(--accent-primary);
+        }
+
+        .branch-line {
+            position: absolute;
+            left: 20px;
+            height: 2px;
+            background: var(--accent-secondary);
+            width: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .branch-line::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid var(--accent-secondary);
+            border-right: 2px solid var(--accent-secondary);
+            transform: rotate(45deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(88, 166, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(88, 166, 255, 0.2);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .load-more {
+            text-align: center;
+            padding: 15px;
+            margin-top: 10px;
+            color: var(--accent-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .load-more:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .end-marker {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .commit-count {
+            background: rgba(88, 166, 255, 0.1);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dark-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .details-container {
+                width: 100%;
+                position: static;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>GitCommit Visualizer</h1>
+                    <p>Infinite scroll with detailed commit view</p>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn" id="refreshBtn">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+                <button class="btn btn-primary" id="changeRepoBtn">
+                    <i class="fas fa-exchange-alt"></i> Change Repo
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="graph-container">
+                <div class="graph-header">
+                    <h2><i class="fas fa-project-diagram"></i> Commit History <span class="commit-count" id="commitCount">Loading...</span></h2>
+                    <div class="repo-info">
+                        <img id="repoAvatar" src="https://avatars.githubusercontent.com/u/65472083?v=4" alt="Author">
+                        <span id="repoName">jbvalle/GitGraphVisualizer</span>
+                    </div>
+                </div>
+                
+                <div class="commit-graph" id="commitGraph">
+                    <div class="loader">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 15px;">Loading commits...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-container">
+                <div class="details-header">
+                    <h2><i class="fas fa-info-circle"></i> Commit Details</h2>
+                </div>
+                <div class="commit-details" id="commitDetails">
+                    <div class="detail-item">
+                        <div class="detail-label">Select a commit to view details</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'https://api.github.com/repos/';
+        const DEFAULT_REPO = 'jbvalle/GitGraphVisualizer';
+        const INITIAL_COMMITS = 10; // Initial commits to load
+        const LOAD_MORE_COUNT = 5;  // Commits to load each time
+        const MAX_COMMITS = 100;    // Maximum commits to prevent excessive loading
+        
+        // State management
+        let allCommits = [];
+        let displayedCommits = 0;
+        let isLoading = false;
+        let activeCommit = null;
+        let currentRepo = DEFAULT_REPO;
+        
+        // DOM Elements
+        const commitGraph = document.getElementById('commitGraph');
+        const commitDetails = document.getElementById('commitDetails');
+        const commitCount = document.getElementById('commitCount');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const changeRepoBtn = document.getElementById('changeRepoBtn');
+        const repoNameEl = document.getElementById('repoName');
+        const repoAvatarEl = document.getElementById('repoAvatar');
+        
+        // Format date to relative time
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return `${seconds} seconds ago`;
+            if (seconds < 3600) return `${Math.floor(seconds/60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds/3600)} hours ago`;
+            
+            const days = Math.floor(seconds/86400);
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        }
+        
+        // Fetch commits from GitHub API
+        async function fetchCommits(repo) {
+            try {
+                const response = await fetch(`${API_BASE}${repo}/commits`);
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Transform data to our structure
+                return data.map((commit, index) => {
+                    return {
+                        sha: commit.sha,
+                        shortSha: commit.sha.substring(0,7),
+                        date: commit.commit.author.date,
+                        message: commit.commit.message.split('\n')[0], // First line only
+                        author: {
+                            name: commit.commit.author.name,
+                            email: commit.commit.author.email,
+                            avatar: commit.author ? commit.author.avatar_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(commit.commit.author.name)}`
+                        },
+                        refs: index === 0 ? ['HEAD', 'main', 'origin/main'] : [], // Simulate refs
+                        html_url: commit.html_url,
+                        files: generateRandomFiles(), // GitHub API doesn't provide file changes in list endpoint
+                        parents: commit.parents.map(parent => parent.sha)
+                    };
+                });
+            } catch (error) {
+                console.error('Error fetching commits:', error);
+                return [];
+            }
+        }
+        
+        // Generate random files for demo
+        function generateRandomFiles() {
+            const fileCount = Math.floor(Math.random() * 3) + 1;
+            const files = [];
+            const fileTypes = ['js', 'html', 'css', 'py', 'java', 'md', 'json', 'yml'];
+            
+            for (let i = 0; i < fileCount; i++) {
+                const fileName = `src/${Math.random().toString(36).substring(2, 7)}.${fileTypes[Math.floor(Math.random() * fileTypes.length)]}`;
+                const additions = Math.floor(Math.random() * 10) + 1;
+                const deletions = Math.floor(Math.random() * 5);
+                
+                files.push({
+                    name: fileName,
+                    changes: `${additions} addition${additions !== 1 ? 's' : ''}, ${deletions} deletion${deletions !== 1 ? 's' : ''}`
+                });
+            }
+            
+            return files;
+        }
+        
+        // Render commit graph with infinite scroll
+        function renderCommitGraph() {
+            if (allCommits.length === 0) {
+                commitGraph.innerHTML = `
+                    <div class="loader">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--warning); margin-bottom: 15px;"></i>
+                        <p>No commits found for this repository</p>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">
+                            Try a different repository or check the URL
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Determine how many commits to display
+            const toDisplay = Math.min(displayedCommits + LOAD_MORE_COUNT, allCommits.length);
+            
+            // Clear existing content except for the first time
+            if (displayedCommits === 0) {
+                commitGraph.innerHTML = '';
+            }
+            
+            // Add commits to display
+            for (let i = displayedCommits; i < toDisplay; i++) {
+                const commit = allCommits[i];
+                const commitNode = document.createElement('div');
+                commitNode.className = 'commit-node';
+                if (i === 0 && activeCommit === null) {
+                    commitNode.classList.add('active');
+                    activeCommit = commit.sha;
+                }
+                
+                commitNode.innerHTML = `
+                    <div class="commit-dot ${activeCommit === commit.sha ? 'pulse' : ''}"></div>
+                    ${i === 1 ? '<div class="branch-line"></div>' : ''}
+                    <div class="commit-card ${activeCommit === commit.sha ? 'active' : ''}">
+                        <div class="commit-header">
+                            <div class="commit-sha">${commit.shortSha}</div>
+                            <div class="commit-date">
+                                <i class="far fa-clock"></i>
+                                ${formatDate(commit.date)}
+                            </div>
+                        </div>
+                        <div class="commit-message">${commit.message}</div>
+                        <div class="commit-author">
+                            <img src="${commit.author.avatar}" alt="${commit.author.name}" class="author-img">
+                            ${commit.author.name}
+                        </div>
+                        <div class="commit-refs">
+                            ${commit.refs.map(ref => {
+                                let refClass = 'ref';
+                                if (ref === 'HEAD') refClass += ' ref-head';
+                                if (ref === 'main' || ref === 'origin/main') refClass += ' ref-main';
+                                return `<span class="${refClass}">${ref}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener to show details
+                const card = commitNode.querySelector('.commit-card');
+                card.addEventListener('click', () => {
+                    // Remove active class from all
+                    document.querySelectorAll('.commit-card').forEach(el => el.classList.remove('active'));
+                    document.querySelectorAll('.commit-dot').forEach(el => el.classList.remove('pulse'));
+                    
+                    // Add active class to clicked
+                    card.classList.add('active');
+                    commitNode.querySelector('.commit-dot').classList.add('pulse');
+                    
+                    // Update active commit
+                    activeCommit = commit.sha;
+                    
+                    // Show commit details
+                    showCommitDetails(commit);
+                });
+                
+                commitGraph.appendChild(commitNode);
+            }
+            
+            // Update displayed commits count
+            displayedCommits = toDisplay;
+            commitCount.textContent = `Showing ${displayedCommits} of ${allCommits.length}`;
+            
+            // Show "Load More" button if there are more commits
+            if (displayedCommits < allCommits.length && allCommits.length < MAX_COMMITS) {
+                const loadMore = document.createElement('div');
+                loadMore.className = 'load-more';
+                loadMore.innerHTML = '<i class="fas fa-chevron-down"></i> Load More Commits';
+                loadMore.addEventListener('click', renderCommitGraph);
+                commitGraph.appendChild(loadMore);
+            } else if (displayedCommits >= allCommits.length && allCommits.length > 0) {
+                const endMarker = document.createElement('div');
+                endMarker.className = 'end-marker';
+                endMarker.innerHTML = allCommits.length >= MAX_COMMITS 
+                    ? 'Maximum commits reached' 
+                    : 'End of commit history';
+                commitGraph.appendChild(endMarker);
+            }
+            
+            // If we haven't shown any details yet, show the first commit
+            if (activeCommit === null && allCommits.length > 0) {
+                activeCommit = allCommits[0].sha;
+                showCommitDetails(allCommits[0]);
+            }
+        }
+        
+        // Show commit details
+        function showCommitDetails(commit) {
+            commitDetails.innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Commit Message</div>
+                    <div class="detail-value">${commit.message}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Author</div>
+                    <div class="detail-value">
+                        <img src="${commit.author.avatar}" alt="${commit.author.name}" 
+                             style="width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px;">
+                        ${commit.author.name} &lt;${commit.author.email}&gt;
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Date</div>
+                    <div class="detail-value">${new Date(commit.date).toLocaleString()}</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Commit Hash</div>
+                    <div class="detail-value">
+                        ${commit.sha}
+                        <a href="${commit.html_url}" target="_blank" style="margin-left: 10px;">
+                            <i class="fas fa-external-link-alt"></i> View on GitHub
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">References</div>
+                    <div class="detail-value">
+                        ${commit.refs.length > 0 
+                            ? commit.refs.map(ref => {
+                                let refClass = 'ref';
+                                if (ref === 'HEAD') refClass += ' ref-head';
+                                if (ref === 'main' || ref === 'origin/main') refClass += ' ref-main';
+                                return `<span class="${refClass}">${ref}</span>`;
+                            }).join(' ') 
+                            : 'No references'}
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Parent Commits</div>
+                    <div class="detail-value">
+                        ${commit.parents.length > 0 
+                            ? commit.parents.map(sha => `<span class="commit-sha">${sha.substring(0,7)}</span>`).join(' ') 
+                            : 'Initial commit (no parents)'}
+                    </div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">Changed Files</div>
+                    <div class="files-list">
+                        ${commit.files.length > 0
+                            ? commit.files.map(file => `
+                                <div class="file-item">
+                                    <i class="far fa-file-code"></i>
+                                    <div style="flex: 1;">${file.name}</div>
+                                    <div style="color: #8b949e;">${file.changes}</div>
+                                </div>
+                            `).join('')
+                            : '<div style="padding: 10px; text-align: center; color: var(--text-secondary);">File change data not available</div>'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load repository data
+        async function loadRepoData() {
+            // Reset state
+            allCommits = [];
+            displayedCommits = 0;
+            activeCommit = null;
+            isLoading = true;
+            
+            // Show loading state
+            commitGraph.innerHTML = `
+                <div class="loader">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px;">Loading commits from ${currentRepo}...</p>
+                </div>
+            `;
+            
+            // Update repo info
+            const [owner] = currentRepo.split('/');
+            repoNameEl.textContent = currentRepo;
+            repoAvatarEl.src = `https://github.com/${owner}.png?size=100`;
+            
+            try {
+                // Fetch commits from GitHub API
+                const commits = await fetchCommits(currentRepo);
+                
+                // Store all commits but only display initial set
+                allCommits = commits;
+                
+                // Render the initial set of commits
+                renderCommitGraph();
+            } catch (error) {
+                console.error('Error loading repo data:', error);
+                commitGraph.innerHTML = `
+                    <div class="loader">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 15px;"></i>
+                        <p>Error loading repository</p>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">
+                            ${error.message || 'Please try again later'}
+                        </p>
+                    </div>
+                `;
+            } finally {
+                isLoading = false;
+            }
+        }
+        
+        // Handle repository change
+        function handleRepoChange() {
+            const newRepo = prompt('Enter GitHub repository (owner/repo):', currentRepo);
+            if (newRepo && newRepo.includes('/')) {
+                currentRepo = newRepo;
+                loadRepoData();
+            }
+        }
+        
+        // Set up infinite scroll
+        function setupInfiniteScroll() {
+            commitGraph.addEventListener('scroll', () => {
+                // Check if we've scrolled to the bottom
+                const { scrollTop, scrollHeight, clientHeight } = commitGraph;
+                const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
+                
+                // Only load more if we're at the bottom and not already loading
+                if (isBottom && !isLoading && displayedCommits < allCommits.length) {
+                    renderCommitGraph();
+                }
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load initial data
+            loadRepoData();
+            
+            // Set up event listeners
+            refreshBtn.addEventListener('click', loadRepoData);
+            changeRepoBtn.addEventListener('click', handleRepoChange);
+            
+            // Set up infinite scroll
+            setupInfiniteScroll();
+        });
+    </script>
+</body>
+</html>
