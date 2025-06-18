@@ -1,0 +1,243 @@
+{
+  "commit": "95a6d268652809aa85f299b13f977498ac37f180",
+  "abbreviated_commit": "95a6d26",
+  "tree": "70261f28de0e265fbb3690630a50824c297fd216",
+  "abbreviated_tree": "70261f2",
+  "parent": "7012ac711c697ae3db7f88a010d62cf81d99aebc",
+  "abbreviated_parent": "7012ac7",
+  "refs": "HEAD -> main, origin/main",
+  "encoding": "",
+  "subject": "upd",
+  "sanitized_subject_line": "upd",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:22:30 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:22:30 +0200"
+  }
+},
+{
+  "commit": "7012ac711c697ae3db7f88a010d62cf81d99aebc",
+  "abbreviated_commit": "7012ac7",
+  "tree": "1373a0cc659fd7f35dbbb7b242fd429a7f34ef80",
+  "abbreviated_tree": "1373a0c",
+  "parent": "671b12a463ee22f6666efeafabf1c9f4f9130f6a",
+  "abbreviated_parent": "671b12a",
+  "refs": "",
+  "encoding": "",
+  "subject": "upd",
+  "sanitized_subject_line": "upd",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:17:42 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:17:42 +0200"
+  }
+},
+{
+  "commit": "671b12a463ee22f6666efeafabf1c9f4f9130f6a",
+  "abbreviated_commit": "671b12a",
+  "tree": "23d36e026b1430c47470fa73f0fc57e772a2f8a1",
+  "abbreviated_tree": "23d36e0",
+  "parent": "03f5c28cb51d3e5a565aa592dceb3beeca7f98f2",
+  "abbreviated_parent": "03f5c28",
+  "refs": "",
+  "encoding": "",
+  "subject": "added getgitcommits.sh",
+  "sanitized_subject_line": "added-getgitcommits.sh",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:14:10 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 15:14:10 +0200"
+  }
+},
+{
+  "commit": "03f5c28cb51d3e5a565aa592dceb3beeca7f98f2",
+  "abbreviated_commit": "03f5c28",
+  "tree": "8011e6e698c9d0f3bb13c28ed6d06c19e41205ad",
+  "abbreviated_tree": "8011e6e",
+  "parent": "b5459462e2921c8de459c294ae0c5a5549ddd17e",
+  "abbreviated_parent": "b545946",
+  "refs": "",
+  "encoding": "",
+  "subject": "TEST: Update roadmap",
+  "sanitized_subject_line": "TEST-Update-roadmap",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 03:50:16 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 03:50:16 +0200"
+  }
+},
+{
+  "commit": "b5459462e2921c8de459c294ae0c5a5549ddd17e",
+  "abbreviated_commit": "b545946",
+  "tree": "9c806ef7645488e35652d68a4a77b71cc9e91b1f",
+  "abbreviated_tree": "9c806ef",
+  "parent": "b2ba4cb2d40080f7b37862b81032b189c144da64",
+  "abbreviated_parent": "b2ba4cb",
+  "refs": "",
+  "encoding": "",
+  "subject": "Upd",
+  "sanitized_subject_line": "Upd",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 02:23:21 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Wed, 18 Jun 2025 02:23:21 +0200"
+  }
+},
+{
+  "commit": "b2ba4cb2d40080f7b37862b81032b189c144da64",
+  "abbreviated_commit": "b2ba4cb",
+  "tree": "2c4d13b5f9f0746c22264e667c46edac6794bb65",
+  "abbreviated_tree": "2c4d13b",
+  "parent": "d4f0755ee92247ee0d04ead6e42821e8042a0d98",
+  "abbreviated_parent": "d4f0755",
+  "refs": "",
+  "encoding": "",
+  "subject": "Update visualizer",
+  "sanitized_subject_line": "Update-visualizer",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:54:21 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:54:21 +0200"
+  }
+},
+{
+  "commit": "d4f0755ee92247ee0d04ead6e42821e8042a0d98",
+  "abbreviated_commit": "d4f0755",
+  "tree": "53a4f8720319f927ec84fb68a045b4ebb4ea319f",
+  "abbreviated_tree": "53a4f87",
+  "parent": "246c040601716581fd5c8aadf43a66afe60b43de",
+  "abbreviated_parent": "246c040",
+  "refs": "",
+  "encoding": "",
+  "subject": "3rd commit",
+  "sanitized_subject_line": "3rd-commit",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:23:24 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:23:24 +0200"
+  }
+},
+{
+  "commit": "246c040601716581fd5c8aadf43a66afe60b43de",
+  "abbreviated_commit": "246c040",
+  "tree": "b4a1cc1ebefd57ee7384ffccd752d6fb6c5ceb75",
+  "abbreviated_tree": "b4a1cc1",
+  "parent": "ed30f1ffbf15700dcd1704ee309b3546f535ed53",
+  "abbreviated_parent": "ed30f1f",
+  "refs": "",
+  "encoding": "",
+  "subject": "2nd commit",
+  "sanitized_subject_line": "2nd-commit",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:22:57 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:22:57 +0200"
+  }
+},
+{
+  "commit": "ed30f1ffbf15700dcd1704ee309b3546f535ed53",
+  "abbreviated_commit": "ed30f1f",
+  "tree": "629cdbeff4edc3d679f737ac3f2c8e61fd9005b4",
+  "abbreviated_tree": "629cdbe",
+  "parent": "",
+  "abbreviated_parent": "",
+  "refs": "",
+  "encoding": "",
+  "subject": "Added Read me",
+  "sanitized_subject_line": "Added-Read-me",
+  "body": "",
+  "commit_notes": "",
+  "verification_flag": "N",
+  "signer": "",
+  "signer_key": "",
+  "author": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:21:42 +0200"
+  },
+  "commiter": {
+    "name": "John Bryan Valle",
+    "email": "jbvalle.jv@gmail.com",
+    "date": "Tue, 17 Jun 2025 22:21:42 +0200"
+  }
+},
