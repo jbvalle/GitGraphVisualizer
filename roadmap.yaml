@@ -30,6 +30,14 @@ roadmap:
           status: "planned"
           tags: ["infrastructure"]
 
+        - id: "CP-002"
+          name: "Database Migration 1"
+          description: "Move to new database cluster"
+          start: 2024-05-01
+          end: 2024-06-15
+          status: "planned"
+          tags: ["infrastructure"]
+
     - name: "User Experience"
       description: "Client-facing improvements"
       color: "#F28E2B"

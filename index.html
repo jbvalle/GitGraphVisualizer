@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitCommit Visualizer - Infinite Scroll</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -176,6 +177,214 @@
             border: 1px solid var(--dark-border);
         }
 
+        /* Roadmap Styles */
+        .roadmap-container {
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .roadmap-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .roadmap-description {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .roadmap-scroll-container {
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+
+        .timeline-header {
+            display: flex;
+            border-bottom: 1px solid var(--dark-border);
+            min-width: 800px;
+        }
+
+        .timeline-header-cell {
+            flex: 1;
+            padding: 8px 5px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-right: 1px solid var(--dark-border);
+        }
+
+        .timeline-header-cell:last-child {
+            border-right: none;
+        }
+
+        .theme-container {
+            margin-bottom: 25px;
+            min-width: 800px;
+        }
+
+        .theme-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .theme-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .theme-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .theme-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .item-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+            min-height: 40px;
+        }
+
+        .item-label {
+            width: 200px;
+            padding: 0 10px;
+            font-size: 14px;
+        }
+
+        .item-bar-container {
+            flex: 1;
+            height: 30px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .item-bar {
+            position: absolute;
+            height: 100%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #000;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: transform 0.2s ease;
+        }
+
+        .item-bar:hover {
+            transform: scale(1.02);
+            z-index: 10;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .milestone-row {
+            display: flex;
+            margin-top: 25px;
+            min-width: 800px;
+            position: relative;
+            min-height: 40px;
+        }
+
+        .milestone-label {
+            width: 200px;
+            padding: 0 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--accent-secondary);
+        }
+
+        .milestone-marker {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: var(--accent-secondary);
+            z-index: 5;
+        }
+
+        .milestone-marker::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+            transform: translateX(-50%);
+        }
+
+        .milestone-content {
+            position: absolute;
+            top: 20px;
+            padding: 5px 10px;
+            background: var(--accent-secondary);
+            color: #000;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            transform: translateX(-50%);
+        }
+
+        .milestone-content::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid var(--accent-secondary);
+            transform: translateX(-50%);
+        }
+
+        .status-legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .status-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Commit History Styles */
         .commit-graph {
             position: relative;
             padding: 20px 0;
@@ -521,6 +730,7 @@
         /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -581,6 +791,23 @@
                     </div>
                 </div>
                 
+                <!-- Roadmap Container -->
+                <div class="roadmap-container">
+                    <div class="roadmap-header">
+                        <h3 class="roadmap-title">Product Development Roadmap</h3>
+                        <button class="btn" id="refreshRoadmapBtn">
+                            <i class="fas fa-sync"></i> Refresh Roadmap
+                        </button>
+                    </div>
+                    <div class="roadmap-description">Strategic plan for product milestones and releases</div>
+                    <div id="roadmapContent">
+                        <div class="loader">
+                            <div class="spinner"></div>
+                            <p>Loading roadmap...</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="commit-graph" id="commitGraph">
                     <div class="loader">
                         <div class="spinner"></div>
@@ -606,6 +833,7 @@
         // Configuration
         const API_BASE = 'https://api.github.com/repos/';
         const DEFAULT_REPO = 'jbvalle/GitGraphVisualizer';
+        const ROADMAP_URL = 'https://raw.githubusercontent.com/jbvalle/GitGraphVisualizer/refs/heads/main/roadmap.yaml';
         const INITIAL_COMMITS = 10; // Initial commits to load
         const LOAD_MORE_COUNT = 5;  // Commits to load each time
         const MAX_COMMITS = 100;    // Maximum commits to prevent excessive loading
@@ -616,6 +844,7 @@
         let isLoading = false;
         let activeCommit = null;
         let currentRepo = DEFAULT_REPO;
+        let roadmapConfig = null;
         
         // DOM Elements
         const commitGraph = document.getElementById('commitGraph');
@@ -623,8 +852,10 @@
         const commitCount = document.getElementById('commitCount');
         const refreshBtn = document.getElementById('refreshBtn');
         const changeRepoBtn = document.getElementById('changeRepoBtn');
+        const refreshRoadmapBtn = document.getElementById('refreshRoadmapBtn');
         const repoNameEl = document.getElementById('repoName');
         const repoAvatarEl = document.getElementById('repoAvatar');
+        const roadmapContent = document.getElementById('roadmapContent');
         
         // Format date to relative time
         function formatDate(dateString) {
@@ -873,6 +1104,162 @@
             `;
         }
         
+        // Fetch and render roadmap from YAML
+        async function loadRoadmap() {
+            try {
+                roadmapContent.innerHTML = `
+                    <div class="loader">
+                        <div class="spinner"></div>
+                        <p>Loading roadmap...</p>
+                    </div>
+                `;
+                
+                const response = await fetch(ROADMAP_URL);
+                const yamlText = await response.text();
+                roadmapConfig = jsyaml.load(yamlText);
+                
+                renderRoadmap(roadmapConfig);
+            } catch (error) {
+                console.error('Error loading roadmap:', error);
+                roadmapContent.innerHTML = `
+                    <div class="loader">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 15px;"></i>
+                        <p>Failed to load roadmap</p>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">
+                            ${error.message || 'Please try again later'}
+                        </p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render roadmap based on configuration
+        function renderRoadmap(config) {
+            if (!config || !config.roadmap) {
+                roadmapContent.innerHTML = '<p>Invalid roadmap configuration</p>';
+                return;
+            }
+            
+            const roadmap = config.roadmap;
+            const startDate = new Date(roadmap.timeframe.start);
+            const endDate = new Date(roadmap.timeframe.end);
+            const totalDuration = endDate - startDate;
+            
+            // Generate time units
+            const timeUnits = [];
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                timeUnits.push(new Date(currentDate));
+                if (roadmap.timeframe.time_units === 'months') {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                } else if (roadmap.timeframe.time_units === 'weeks') {
+                    currentDate.setDate(currentDate.getDate() + 7);
+                } else if (roadmap.timeframe.time_units === 'quarters') {
+                    currentDate.setMonth(currentDate.getMonth() + 3);
+                } else {
+                    currentDate.setFullYear(currentDate.getFullYear() + 1);
+                }
+            }
+            
+            let html = `
+                <div class="roadmap-scroll-container">
+                    <div class="timeline-header">
+                        <div class="timeline-header-cell">Theme/Item</div>
+            `;
+            
+            // Add time units to header
+            timeUnits.forEach(date => {
+                const label = roadmap.timeframe.time_units === 'months' 
+                    ? date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                    : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                html += `<div class="timeline-header-cell">${label}</div>`;
+            });
+            
+            html += `</div>`; // Close timeline-header
+            
+            // Add themes and items
+            if (roadmap.themes && roadmap.themes.length > 0) {
+                roadmap.themes.forEach(theme => {
+                    html += `
+                        <div class="theme-container">
+                            <div class="theme-header">
+                                <div class="theme-color" style="background: ${theme.color};"></div>
+                                <div class="theme-name">${theme.name}</div>
+                                <div class="theme-description">${theme.description}</div>
+                            </div>
+                    `;
+                    
+                    // Add items for this theme
+                    if (theme.items && theme.items.length > 0) {
+                        theme.items.forEach(item => {
+                            const itemStart = new Date(item.start);
+                            const itemEnd = new Date(item.end);
+                            const startPos = ((itemStart - startDate) / totalDuration) * 100;
+                            const duration = ((itemEnd - itemStart) / totalDuration) * 100;
+                            
+                            // Get status color
+                            const statusColor = roadmap.display?.status_colors?.[item.status] || 
+                                              '#CCCCCC'; // Default to planned color
+                            
+                            html += `
+                                <div class="item-row">
+                                    <div class="item-label">${item.name}</div>
+                                    <div class="item-bar-container">
+                                        <div class="item-bar" 
+                                            style="left: ${startPos}%; 
+                                                   width: ${duration}%;
+                                                   background: ${statusColor};">
+                                            ${item.name}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    html += `</div>`; // Close theme-container
+                });
+            }
+            
+            // Add milestones
+            if (roadmap.milestones && roadmap.milestones.length > 0) {
+                html += `<div class="milestone-row">`;
+                html += `<div class="milestone-label">Milestones</div>`;
+                
+                roadmap.milestones.forEach(milestone => {
+                    const milestoneDate = new Date(milestone.date);
+                    const position = ((milestoneDate - startDate) / totalDuration) * 100;
+                    
+                    html += `
+                        <div class="milestone-marker" style="left: ${position}%;">
+                            <div class="milestone-content">
+                                ${milestone.name}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`; // Close milestone-row
+            }
+            
+            // Add status legend
+            if (roadmap.display?.status_colors) {
+                html += `<div class="status-legend">`;
+                for (const [status, color] of Object.entries(roadmap.display.status_colors)) {
+                    html += `
+                        <div class="status-item">
+                            <div class="status-color" style="background: ${color};"></div>
+                            ${status}
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+            }
+            
+            html += `</div>`; // Close roadmap-scroll-container
+            roadmapContent.innerHTML = html;
+        }
+        
         // Load repository data
         async function loadRepoData() {
             // Reset state
@@ -946,10 +1333,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Load initial data
             loadRepoData();
+            loadRoadmap();
             
             // Set up event listeners
             refreshBtn.addEventListener('click', loadRepoData);
             changeRepoBtn.addEventListener('click', handleRepoChange);
+            refreshRoadmapBtn.addEventListener('click', loadRoadmap);
             
             // Set up infinite scroll
             setupInfiniteScroll();
