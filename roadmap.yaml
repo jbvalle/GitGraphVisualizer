@@ -1,0 +1,83 @@
+# Timeline Roadmap Configuration
+roadmap:
+  title: "Product Development Roadmap"
+  description: "Strategic plan for product milestones and releases"
+  timeframe:
+    start: 2024-01-01
+    end: 2024-12-31
+    time_units: months  # could be weeks, quarters, years
+  
+  # Theme/Container for grouping related items
+  themes:
+    - name: "Core Platform"
+      description: "Foundation features and infrastructure"
+      color: "#4E79A7"
+      items:
+        - id: "CP-001"
+          name: "API Overhaul"
+          description: "Complete redesign of public API endpoints"
+          start: 2024-02-15
+          end: 2024-04-30
+          status: "planned"  # planned, in-progress, completed, delayed
+          dependencies: ["INF-002"]
+          tags: ["backend", "breaking-change"]
+          
+        - id: "CP-002"
+          name: "Database Migration"
+          description: "Move to new database cluster"
+          start: 2024-05-01
+          end: 2024-06-15
+          status: "planned"
+          tags: ["infrastructure"]
+
+    - name: "User Experience"
+      description: "Client-facing improvements"
+      color: "#F28E2B"
+      items:
+        - id: "UX-001"
+          name: "Mobile Redesign"
+          description: "New responsive mobile interface"
+          start: 2024-03-01
+          end: 2024-07-01
+          status: "planned"
+          phases:
+            - name: "Design"
+              start: 2024-03-01
+              end: 2024-04-15
+            - name: "Implementation"
+              start: 2024-04-16
+              end: 2024-06-15
+            - name: "Testing"
+              start: 2024-06-16
+              end: 2024-07-01
+
+  # Cross-theme milestones
+  milestones:
+    - id: "M-001"
+      name: "Public Beta Launch"
+      date: 2024-08-15
+      description: "Release product to first external users"
+      significance: "high"  # high, medium, low
+      dependencies: ["CP-001", "UX-001"]
+      
+    - id: "M-002"
+      name: "GA Release"
+      date: 2024-11-01
+      description: "General availability release"
+      significance: "high"
+
+  # Configuration for visualization
+  display:
+    time_axis_orientation: "horizontal"  # or vertical
+    show_dependencies: true
+    show_status_indicator: true
+    theme_colors:
+      - "#4E79A7"
+      - "#F28E2B"
+      - "#E15759"
+      - "#76B7B2"
+    status_colors:
+      planned: "#CCCCCC"
+      in-progress: "#FFD700"
+      completed: "#2E8B57"
+      delayed: "#CD5C5C"
