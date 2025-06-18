@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitCommit Visualizer - Infinite Scroll</title>
+    <title>GitCommit Visualizer - JSON Support</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
@@ -120,6 +120,15 @@
         .btn-primary:hover {
             background: linear-gradient(135deg, #4a94e0, #a77bff);
             box-shadow: 0 5px 15px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-toggle {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+        }
+        .btn-toggle.active {
+            background: var(--accent-primary);
+            color: var(--dark-bg);
         }
 
         .main-content {
@@ -318,7 +327,6 @@
             color: var(--accent-secondary);
         }
 
-        /* Updated milestone marker with checkered pattern */
         .milestone-marker {
             position: absolute;
             top: 0;
@@ -778,16 +786,21 @@
                 </div>
                 <div class="logo-text">
                     <h1>GitCommit Visualizer</h1>
-                    <p>Infinite scroll with detailed commit view</p>
+                    <p>Now with JSON support</p>
                 </div>
             </div>
             <div class="controls">
                 <button class="btn" id="refreshBtn">
                     <i class="fas fa-sync"></i> Refresh
                 </button>
-                <button class="btn btn-primary" id="changeRepoBtn">
-                    <i class="fas fa-exchange-alt"></i> Change Repo
-                </button>
+                <div class="btn-group">
+                    <button class="btn btn-toggle" id="githubModeBtn">
+                        <i class="fab fa-github"></i> GitHub API
+                    </button>
+                    <button class="btn btn-toggle active" id="jsonModeBtn">
+                        <i class="fas fa-file-code"></i> JSON Data
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -797,7 +810,7 @@
                     <h2><i class="fas fa-project-diagram"></i> Commit History <span class="commit-count" id="commitCount">Loading...</span></h2>
                     <div class="repo-info">
                         <img id="repoAvatar" src="https://avatars.githubusercontent.com/u/65472083?v=4" alt="Author">
-                        <span id="repoName">jbvalle/GitGraphVisualizer</span>
+                        <span id="repoName">jbvalle/GitGraphVisualizer (JSON)</span>
                     </div>
                 </div>
                 
@@ -842,11 +855,12 @@
     <script>
         // Configuration
         const API_BASE = 'https://api.github.com/repos/';
+        const JSON_URL = 'https://raw.githubusercontent.com/jbvalle/GitGraphVisualizer/refs/heads/main/commits.json';
         const DEFAULT_REPO = 'jbvalle/GitGraphVisualizer';
         const ROADMAP_URL = 'https://raw.githubusercontent.com/jbvalle/GitGraphVisualizer/refs/heads/main/roadmap.yaml';
-        const INITIAL_COMMITS = 10; // Initial commits to load
-        const LOAD_MORE_COUNT = 5;  // Commits to load each time
-        const MAX_COMMITS = 100;    // Maximum commits to prevent excessive loading
+        const INITIAL_COMMITS = 10;
+        const LOAD_MORE_COUNT = 5;
+        const MAX_COMMITS = 100;
         
         // State management
         let allCommits = [];
@@ -855,13 +869,15 @@
         let activeCommit = null;
         let currentRepo = DEFAULT_REPO;
         let roadmapConfig = null;
+        let dataSource = 'json'; // Default to JSON
         
         // DOM Elements
         const commitGraph = document.getElementById('commitGraph');
         const commitDetails = document.getElementById('commitDetails');
         const commitCount = document.getElementById('commitCount');
         const refreshBtn = document.getElementById('refreshBtn');
-        const changeRepoBtn = document.getElementById('changeRepoBtn');
+        const githubModeBtn = document.getElementById('githubModeBtn');
+        const jsonModeBtn = document.getElementById('jsonModeBtn');
         const refreshRoadmapBtn = document.getElementById('refreshRoadmapBtn');
         const repoNameEl = document.getElementById('repoName');
         const repoAvatarEl = document.getElementById('repoAvatar');
@@ -881,10 +897,73 @@
             return `${days} day${days !== 1 ? 's' : ''} ago`;
         }
         
-        // Fetch commits from GitHub API
-        async function fetchCommits(repo) {
+        // Fix and parse the JSON data
+        function parseCommitData(rawData) {
             try {
-                const response = await fetch(`https://api.github.com/repos/jbvalle/GitGraphVisualizer/commits`);
+                // First try to parse as regular JSON
+                return JSON.parse(rawData);
+            } catch (e) {
+                // If that fails, try to fix the format
+                try {
+                    // Remove trailing comma if exists
+                    let fixedData = rawData.trim();
+                    if (fixedData.endsWith(',')) {
+                        fixedData = fixedData.slice(0, -1);
+                    }
+                    // Wrap in array brackets if needed
+                    if (!fixedData.startsWith('[')) {
+                        fixedData = '[' + fixedData + ']';
+                    }
+                    return JSON.parse(fixedData);
+                } catch (e2) {
+                    console.error('Failed to parse JSON data:', e2);
+                    return [];
+                }
+            }
+        }
+
+        // Fetch commits from JSON URL
+        async function fetchCommitsFromJson() {
+            try {
+                const response = await fetch(JSON_URL);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch JSON: ${response.status}`);
+                }
+                const rawData = await response.text();
+                const commitsData = parseCommitData(rawData);
+                
+                if (!Array.isArray(commitsData)) {
+                    throw new Error('Parsed data is not an array');
+                }
+
+                // Transform data to our structure
+                return commitsData.map(commit => {
+                    return {
+                        sha: commit.commit,
+                        shortSha: commit.abbreviated_commit,
+                        date: commit.author.date,
+                        message: commit.subject,
+                        author: {
+                            name: commit.author.name,
+                            email: commit.author.email,
+                            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(commit.author.name)}`
+                        },
+                        refs: commit.refs ? commit.refs.split(',').map(s => s.trim()).filter(s => s) : [],
+                        html_url: `https://github.com/${currentRepo}/commit/${commit.commit}`,
+                        files: generateRandomFiles(),
+                        parents: commit.parent ? [commit.parent] : []
+                    };
+                });
+            } catch (error) {
+                console.error('Error fetching JSON commits:', error);
+                return [];
+            }
+        }
+
+        // Fetch commits from GitHub API
+        async function fetchCommitsFromGitHub() {
+            try {
+                const response = await fetch(`${API_BASE}${currentRepo}/commits`);
                 if (!response.ok) {
                     throw new Error(`GitHub API error: ${response.status}`);
                 }
@@ -909,7 +988,7 @@
                     };
                 });
             } catch (error) {
-                console.error('Error fetching commits:', error);
+                console.error('Error fetching GitHub commits:', error);
                 return [];
             }
         }
@@ -1231,7 +1310,7 @@
                 });
             }
             
-            // Add milestones with the new checkered line
+            // Add milestones
             if (roadmap.milestones && roadmap.milestones.length > 0) {
                 html += `<div class="milestone-row">`;
                 html += `<div class="milestone-label">Milestones</div>`;
@@ -1282,21 +1361,26 @@
             commitGraph.innerHTML = `
                 <div class="loader">
                     <div class="spinner"></div>
-                    <p style="margin-top: 15px;">Loading commits from ${currentRepo}...</p>
+                    <p style="margin-top: 15px;">Loading commits...</p>
                 </div>
             `;
             
-            // Update repo info
-            const [owner] = currentRepo.split('/');
-            repoNameEl.textContent = currentRepo;
-            repoAvatarEl.src = `https://github.com/${owner}.png?size=100`;
-            
             try {
-                // Fetch commits from GitHub API
-                const commits = await fetchCommits(currentRepo);
+                // Fetch commits based on data source
+                if (dataSource === 'json') {
+                    allCommits = await fetchCommitsFromJson();
+                } else {
+                    allCommits = await fetchCommitsFromGitHub();
+                }
                 
-                // Store all commits but only display initial set
-                allCommits = commits;
+                // Update repo info
+                const [owner] = currentRepo.split('/');
+                repoNameEl.textContent = dataSource === 'json' ? 
+                    'jbvalle/GitGraphVisualizer (JSON)' : 
+                    currentRepo;
+                repoAvatarEl.src = dataSource === 'json' ? 
+                    `https://github.com/jbvalle.png?size=100` : 
+                    `https://github.com/${owner}.png?size=100`;
                 
                 // Render the initial set of commits
                 renderCommitGraph();
@@ -1316,15 +1400,6 @@
             }
         }
         
-        // Handle repository change
-        function handleRepoChange() {
-            const newRepo = prompt('Enter GitHub repository (owner/repo):', currentRepo);
-            if (newRepo && newRepo.includes('/')) {
-                currentRepo = newRepo;
-                loadRepoData();
-            }
-        }
-        
         // Set up infinite scroll
         function setupInfiniteScroll() {
             commitGraph.addEventListener('scroll', () => {
@@ -1341,13 +1416,32 @@
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Set JSON mode as active by default
+            jsonModeBtn.classList.add('active');
+            githubModeBtn.classList.remove('active');
+            
             // Load initial data
             loadRepoData();
             loadRoadmap();
             
             // Set up event listeners
             refreshBtn.addEventListener('click', loadRepoData);
-            changeRepoBtn.addEventListener('click', handleRepoChange);
+            githubModeBtn.addEventListener('click', () => {
+                if (dataSource !== 'github') {
+                    dataSource = 'github';
+                    githubModeBtn.classList.add('active');
+                    jsonModeBtn.classList.remove('active');
+                    loadRepoData();
+                }
+            });
+            jsonModeBtn.addEventListener('click', () => {
+                if (dataSource !== 'json') {
+                    dataSource = 'json';
+                    jsonModeBtn.classList.add('active');
+                    githubModeBtn.classList.remove('active');
+                    loadRepoData();
+                }
+            });
             refreshRoadmapBtn.addEventListener('click', loadRoadmap);
             
             // Set up infinite scroll
